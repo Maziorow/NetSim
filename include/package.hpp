@@ -11,10 +11,10 @@ public:
 
     Package();
     Package(ElementID id): id_(id) {};
-    Package(Package&& other): id_(other.id_) {};
+    Package(Package&& other) noexcept;
     ~Package();
 
-    const ElementID get_id() const { return id_; }
+    ElementID get_id() const { return id_; }
 
     Package& operator=(Package&&) = default;
 

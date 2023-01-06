@@ -2,7 +2,8 @@
 #define IMPLEMENTATION_TYPES_HPP
 
 #include <stdlib.h>
+#include <cinttypes>
 
-using ElementID = unsigned int;
+using ElementID = uint16_t;
 using size_t = std::size_t;
 #endif //IMPLEMENTATION_TYPES_HPP
