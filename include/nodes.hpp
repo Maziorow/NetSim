@@ -21,7 +21,6 @@ public:
     virtual ElementID get_id() const = 0;
     virtual ReceiverType get_receiver_type() const = 0;
     virtual ~IPackageReceiver() {}
-
 };
 
 
@@ -48,6 +47,7 @@ public:
 class PackageSender{
 public:
     PackageSender() = default;
+    PackageSender& operator=(PackageSender&&) = default;
     PackageSender(PackageSender&& p) = default;
     void send_package();
     std::optional<Package>& get_sending_buffer() {return buffer;}
@@ -83,6 +83,7 @@ public:
     ElementID get_id() const override {return id_; }
     ReceiverType get_receiver_type() const override { return ReceiverType::WORKER; }
     void receive_package(Package&& p) override { q_->push(std::move(p)); }
+    IPackageQueue* get_queue() const { return q_.get(); }
 
 private:
     ElementID id_;

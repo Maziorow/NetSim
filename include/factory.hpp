@@ -5,6 +5,9 @@
 
 #include <vector>
 #include <map>
+#include <string>
+#include <istream>
+#include <ostream>
 
 template <class T>
         class NodeCollection{
@@ -32,30 +35,31 @@ enum class NodeColor;
 bool has_reachable_storehouse(const PackageSender* sender, std::map<const PackageSender*, NodeColor>& node_colors);
 
 
+
 class Factory{
 public:
     void add_ramp(Ramp&& ramp) { ramps_.add(std::move(ramp)); }
-    void remove_ramp(ElementID id) { ramps_.remove_by_id(id); }
-    NodeCollection<Ramp>::iterator       find_ramp_by_id(ElementID id) { ramps_.find_by_id(id); }
-    NodeCollection<Ramp>::const_iterator find_ramp_by_id(ElementID id) const { ramps_.find_by_id(id); }
+    void remove_ramp(ElementID id) { remove_receiver(ramps_, id); }
+    NodeCollection<Ramp>::iterator       find_ramp_by_id(ElementID id) { return ramps_.find_by_id(id); }
+    NodeCollection<Ramp>::const_iterator find_ramp_by_id(ElementID id) const { return ramps_.find_by_id(id); }
     NodeCollection<Ramp>::const_iterator ramp_cbegin() const {return ramps_.cbegin(); }
     NodeCollection<Ramp>::const_iterator ramp_cend()   const {return ramps_.cend(); }
     NodeCollection<Ramp>::iterator ramp_begin() {return ramps_.begin(); }
     NodeCollection<Ramp>::iterator ramp_end() {return ramps_.end(); }
 
     void add_worker(Worker&& worker) { workers_.add(std::move(worker)); }
-    void remove_worker(ElementID id) { workers_.remove_by_id(id); }
-    NodeCollection<Worker>::iterator       find_worker_by_id(ElementID id) { workers_.find_by_id(id); }
-    NodeCollection<Worker>::const_iterator find_worker_by_id(ElementID id) const{ workers_.find_by_id(id); }
+    void remove_worker(ElementID id) { remove_receiver(workers_, id); }
+    NodeCollection<Worker>::iterator       find_worker_by_id(ElementID id) { return workers_.find_by_id(id); }
+    NodeCollection<Worker>::const_iterator find_worker_by_id(ElementID id) const{ return workers_.find_by_id(id); }
     NodeCollection<Worker>::const_iterator worker_cbegin() const {return workers_.cbegin(); }
     NodeCollection<Worker>::const_iterator worker_cend()   const {return workers_.cend(); }
     NodeCollection<Worker>::iterator worker_begin()  {return workers_.begin(); }
     NodeCollection<Worker>::iterator worker_end() {return workers_.end(); }
 
     void add_storehouse(Storehouse&& storehouse) { storehouses_.add(std::move(storehouse)); }
-    void remove_storehouse(ElementID id) {storehouses_.remove_by_id(id); }
-    NodeCollection<Storehouse>::iterator       find_storehouse_by_id(ElementID id) { storehouses_.find_by_id(id); }
-    NodeCollection<Storehouse>::const_iterator find_storehouse_by_id(ElementID id) const { storehouses_.find_by_id(id); }
+    void remove_storehouse(ElementID id) {remove_receiver(storehouses_, id); }
+    NodeCollection<Storehouse>::iterator       find_storehouse_by_id(ElementID id) { return storehouses_.find_by_id(id); }
+    NodeCollection<Storehouse>::const_iterator find_storehouse_by_id(ElementID id) const { return storehouses_.find_by_id(id); }
     NodeCollection<Storehouse>::const_iterator storehouse_cbegin() const {return storehouses_.cbegin(); }
     NodeCollection<Storehouse>::const_iterator storehouse_cend()   const {return storehouses_.cend(); }
     NodeCollection<Storehouse>::iterator storehouse_begin() {return storehouses_.begin(); }
@@ -75,6 +79,20 @@ private:
     NodeCollection<Worker> workers_;
     NodeCollection<Storehouse> storehouses_;
 };
+
+struct ParsedLineData{
+    std::string element_type;
+    std::map<std::string,std::string> parameters;
+};
+
+
+ParsedLineData parse_line(std::string line);
+Factory load_factory_structure(std::istream& is);
+void save_factory_structure(Factory& factory, std::ostream os);
+ParsedLineData parse_link
+
+
+
 
 
 
