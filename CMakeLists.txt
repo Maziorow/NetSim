@@ -25,6 +25,7 @@
             test/test_package.cpp
             test/test_storage_types.cpp
             test/test_nodes.cpp
+            test/test_factory_io.cpp
     )
 
     add_executable(NetSim_test ${SOURCE_FILES} ${SOURCES_FILES_TESTS} test/main_gtest.cpp)
@@ -39,6 +40,6 @@
 
     target_link_libraries(NetSim_test gmock)
 
-    target_compile_definitions(NetSim_test PUBLIC EXERCISE_ID=EXERCISE_ID_FACTORY)
+    target_compile_definitions(NetSim_test PUBLIC EXERCISE_ID=REPORTING)
 
 

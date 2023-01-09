@@ -7,6 +7,7 @@
 #include <iostream>
 #include <sstream>
 #include <vector>
+#include <ostream>
 
 
 template <class T>
@@ -27,9 +28,6 @@ typename std::vector<T>::const_iterator NodeCollection<T>::find_by_id(ElementID 
     const_iterator found = std::find_if(node_.begin(),node_.end(), [&] (T const& p) {return p.get_id() ==id;});
     return found;
 }
-
-
-enum class NodeColor { UNVISITED, VISITED, VERIFIED };
 
 
 bool has_reachable_storehouse(const PackageSender* sender, std::map<const PackageSender*, NodeColor>& node_colors){
@@ -161,7 +159,7 @@ ParsedLineData parse_line(std::string line){
     while (std::getline(token_stream, token, delimiter)){
         tokens.push_back(token);
     }
-    if(std::find(keys.begin(),keys.end(), tokens[0]) != keys.end()){
+    if(std::find(keys.begin(),keys.end(), tokens[0]) == keys.end()){
         throw std::logic_error("Invalid key while loading from file");
     }
     key = tokens[0];
@@ -171,7 +169,7 @@ ParsedLineData parse_line(std::string line){
     for(auto el : tokens){
         std::string element;
         std::vector<std::string> elements;
-        //std::basic_istringstream el_stream(el);
+        std::istringstream el_stream(el);
         while(std::getline(el_stream,element,'=')){
             elements.push_back(element);
         }
@@ -184,69 +182,122 @@ ParsedLineData parse_line(std::string line){
 Factory load_factory_structure(std::istream& is){
 
     Factory factory;
-
     std::string line;
-    //std::map<std::string, int> type_map {{"LOADING_RAMP",0}, {"WORKER",1}, {"STOREHOUSE",2}, {"LINK",3}};
 
     while (std::getline(is, line)) {
-        if (line[0] != ';' && line[0] != ' ') {
+        if (line[0] != ';' && line[0] != ' ' && line[0] != '\n') {
             ParsedLineData parsed_line = parse_line(line);
 
-            /**
-                    switch (type_map[parsed_line.element_type]){
-                        case 0: //LOADING_RAMP
-                            factory.add_ramp(Ramp(std::stoi(parsed_line.parameters["id"]), std::stoi(parsed_line.parameters["delivery-interval"])));
-                            break;
-                        case 1: //WORKER
-                            ElementID id = std::stoi(parsed_line.parameters["id"]);
-                            TimeOffset processing_time = std::stoi(parsed_line.parameters["processing-time"]);
-                            if(parsed_line.parameters["queue-type"] == "FIFO") {
-                                Worker worker_ = Worker(id, processing_time,std::make_unique<PackageQueue>(PackageQueueType::FIFO));
-                            }
-                            if(parsed_line.parameters["queue-type"] == "LIFO"){
-                                Worker worker_ = Worker(id, processing_time,std::make_unique<PackageQueue>(PackageQueueType::LIFO));
-                            }
-                            break;
-                        case 2: //STOREHOUSE
-                            factory.add_storehouse(Storehouse(std::stoi(parsed_line.parameters["id"])));
-                            break;
-                        case 3: //LINK
-                            break;
+            if (parsed_line.element_type == "LOADING_RAMP"){
+                factory.add_ramp(Ramp(std::stoi(parsed_line.parameters["id"]), std::stoi(parsed_line.parameters["delivery-interval"])));
+            } else if (parsed_line.element_type == "WORKER"){
+                ElementID id = std::stoi(parsed_line.parameters["id"]);
+                TimeOffset processing_time = std::stoi(parsed_line.parameters["processing-time"]);
+                if (parsed_line.parameters["queue-type"] == "FIFO") {
+                    factory.add_worker(Worker(id, processing_time,std::make_unique<PackageQueue>(PackageQueueType::FIFO)));
+                }
+                if (parsed_line.parameters["queue-type"] == "LIFO"){
+                    factory.add_worker(Worker(id, processing_time,std::make_unique<PackageQueue>(PackageQueueType::LIFO)));
+                }
+            } else if (parsed_line.element_type == "STOREHOUSE"){
+                factory.add_storehouse(Storehouse(std::stoi(parsed_line.parameters["id"])));
+            } else if (parsed_line.element_type == "LINK"){
+                char delimiter = '-';
 
+                std::string src = parsed_line.parameters["src"];
+                std::string src_type = src.substr(0, src.find(delimiter));
+                ElementID src_id = std::stoi(src.substr(src.find(delimiter)+1, src.length()-src.find(delimiter)));
+
+                std::string dest = parsed_line.parameters["dest"];
+                std::string dest_type = dest.substr(0, dest.find(delimiter));
+                ElementID dest_id = std::stoi(dest.substr(dest.find(delimiter)+1, dest.length()-dest.find(delimiter)));
+
+                if (src_type == "ramp"){
+                    auto src_ramp_it = factory.find_ramp_by_id(src_id);
+                    if (dest_type == "worker"){
+                        auto dest_worker_it = factory.find_worker_by_id(dest_id);
+                        auto up_cast = dynamic_cast<IPackageReceiver*>(dest_worker_it.base());
+                        src_ramp_it->receiver_preferences_.add_receiver(up_cast);
+                    } else if (dest_type == "store"){
+                        auto dest_store_it = factory.find_storehouse_by_id(dest_id);
+                        auto up_cast = dynamic_cast<IPackageReceiver*>(dest_store_it.base());
+                        src_ramp_it->receiver_preferences_.add_receiver(up_cast);
+                    } else{
+                        throw std::logic_error("Invalid link destination");
                     }
-            **/
-
+                } else if (src_type == "worker"){
+                    auto src_worker_it = factory.find_worker_by_id(src_id);
+                    if (dest_type == "worker"){
+                        auto dest_worker_it = factory.find_worker_by_id(dest_id);
+                        auto up_cast = dynamic_cast<IPackageReceiver*>(dest_worker_it.base());
+                        src_worker_it->receiver_preferences_.add_receiver(up_cast);
+                    } else if (dest_type == "store"){
+                        auto dest_store_it = factory.find_storehouse_by_id(dest_id);
+                        auto up_cast = dynamic_cast<IPackageReceiver*>(dest_store_it.base());
+                        src_worker_it->receiver_preferences_.add_receiver(up_cast);
+                    }else {
+                        throw std::logic_error("Invalid link destination");
+                    }
+                } else {
+                    throw std::logic_error("Invalid link source");
+                }
+            }
             
         }
     }
+    return factory;
 }
 
 
-void save_factory_structure(Factory& factory, std::ostream os){
+void save_factory_structure(Factory& factory, std::ostream& os) {
 
     os << "; == LOADING RAMPS ==" << std::endl << std::endl;
-    for(auto it = factory.ramp_begin(); it != factory.ramp_cend(); it++)
-        os << "LOADING_RAMP id=" << it->get_id()<< " delivery-interval="<< it->get_delivery_interval() << std::endl;
+    for (auto it = factory.ramp_begin(); it != factory.ramp_cend(); it++)
+        os << "LOADING_RAMP id=" << it->get_id() << " delivery-interval=" << it->get_delivery_interval() << std::endl;
 
 
     os << std::endl << "; == WORKERS ==" << std::endl << std::endl;
-    for(auto it = factory.worker_begin(); it != factory.worker_cend(); it++)
-        os <<"WORKER id=" << it->get_id()<< " processing-time="<< it->get_processing_duration() <<" queue-type="<< it->get_queue()<< std::endl;
+    for (auto it = factory.worker_begin(); it != factory.worker_cend(); it++)
+        os << "WORKER id=" << it->get_id() << " processing-time=" << it->get_processing_duration() << " queue-type="
+           << it->get_queue() << std::endl;
 
 
     os << std::endl << "; == STOREHOUSES ==" << std::endl << std::endl;
-    for(auto it = factory.storehouse_begin(); it != factory.storehouse_cend(); it++)
-        os <<"STOREHOUSE id=" << it->get_id() << std::endl;
+    for (auto it = factory.storehouse_begin(); it != factory.storehouse_cend(); it++)
+        os << "STOREHOUSE id=" << it->get_id() << std::endl;
 
 
     os << std::endl << "; == LINKS ==" << std::endl << std::endl;
 
+    for (auto el = factory.ramp_begin(); el != factory.ramp_cend(); el++) {
+        for (auto elinmap: el->receiver_preferences_.get_preferences()) {
+            os << "LINK src=ramp-" << el->get_id() << " dest="
+               << ((elinmap.first->get_receiver_type() == ReceiverType::WORKER) ? "worker-" : "store-")
+               << elinmap.first->get_id() << std::endl;
+            auto pref = el->receiver_preferences_.get_preferences();
+        }
+        os<< std::endl;
+    }
 
-    //std::for_each();
-
+    for (auto el = factory.worker_begin(); el != factory.worker_cend(); el++) {
+        for (auto elinmap: el->receiver_preferences_.get_preferences()) {
+                os << "LINK src=ramp-" << el->get_id() << " dest="
+                   << ((elinmap.first->get_receiver_type() == ReceiverType::WORKER) ? "worker-" : "store-")
+                   << elinmap.first->get_id() << std::endl;
+                auto pref = el->receiver_preferences_.get_preferences();
+        }
+        os<< std::endl;
+    }
 
 
     os.flush();
 
-
 }
+/**
+void generate_structure_report(const Factory& f, std::ostream& os){
+    os << std::endl << "== LOADING RAMPS ==";
+    std::vector<Ramp> sorted_ramps;
+    //std::copy(f.ramp_cbegin(),f.ramp_cend(),std::back_inserter(sorted_ramps));
+    //std::sort(sorted_ramps.begin(),sorted_ramps.end(), [](Ramp lhs, Ramp rhs) {return lhs.get_id() > rhs.get_id(); });
+}
+ **/

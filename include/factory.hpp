@@ -8,6 +8,8 @@
 #include <string>
 #include <istream>
 #include <ostream>
+#include <iostream>
+#include <sstream>
 
 template <class T>
         class NodeCollection{
@@ -31,7 +33,7 @@ public:
 };
 
 
-enum class NodeColor;
+enum class NodeColor { UNVISITED, VISITED, VERIFIED };
 bool has_reachable_storehouse(const PackageSender* sender, std::map<const PackageSender*, NodeColor>& node_colors);
 
 
@@ -88,9 +90,9 @@ struct ParsedLineData{
 
 ParsedLineData parse_line(std::string line);
 Factory load_factory_structure(std::istream& is);
-void save_factory_structure(Factory& factory, std::ostream os);
-ParsedLineData parse_link
+void save_factory_structure(Factory& factory, std::ostream& os);
 
+//void generate_structure_report(const Factory& f, std::ostream& os);
 
 
 

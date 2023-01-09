@@ -33,7 +33,8 @@ public:
     void add_receiver(IPackageReceiver* r);
     void remove_receiver(IPackageReceiver* r);
     IPackageReceiver* choose_receiver();
-    preferences_t& get_preferences() {return preferences_;}
+    //preferences_t& get_preferences() {return preferences_;}
+    const preferences_t& get_preferences() const {return preferences_;}
     preferences_t preferences_;
     ProbabilityGenerator rand_function = probability_generator;
 
@@ -84,6 +85,7 @@ public:
     ReceiverType get_receiver_type() const override { return ReceiverType::WORKER; }
     void receive_package(Package&& p) override { q_->push(std::move(p)); }
     IPackageQueue* get_queue() const { return q_.get(); }
+    const std::optional<Package>& get_processing_buffer() { return buffer; }
 
 private:
     ElementID id_;

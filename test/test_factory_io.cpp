@@ -232,7 +232,6 @@ TEST(FactoryIOTest, LoadAndSaveTest) {
     auto first_occurence = [&output_lines](std::string label) {
         return std::find_if(output_lines.begin(), output_lines.end(),
                             [label](const std::string s) { return s.rfind(label, 0) == 0; });
-    };
 
     auto first_ramp_it = first_occurence("LOADING_RAMP");
     auto first_worker_it = first_occurence("WORKER");
