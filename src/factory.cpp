@@ -185,7 +185,7 @@ Factory load_factory_structure(std::istream& is){
     std::string line;
 
     while (std::getline(is, line)) {
-        if (line[0] != ';' && line[0] != ' ' && line[0] != '\n') {
+        if (line[0] != ';' && line[0] != ' ' && line[0] != '\n' && !line.empty()) {
             ParsedLineData parsed_line = parse_line(line);
 
             if (parsed_line.element_type == "LOADING_RAMP"){
@@ -252,43 +252,43 @@ Factory load_factory_structure(std::istream& is){
 void save_factory_structure(Factory& factory, std::ostream& os) {
 
     os << "; == LOADING RAMPS ==" << std::endl << std::endl;
-    for (auto it = factory.ramp_begin(); it != factory.ramp_cend(); it++)
+    for (auto it = factory.ramp_begin(); it != factory.ramp_cend(); it++) {
         os << "LOADING_RAMP id=" << it->get_id() << " delivery-interval=" << it->get_delivery_interval() << std::endl;
-
+    }
 
     os << std::endl << "; == WORKERS ==" << std::endl << std::endl;
-    for (auto it = factory.worker_begin(); it != factory.worker_cend(); it++)
+    for (auto it = factory.worker_begin(); it != factory.worker_cend(); it++){
         os << "WORKER id=" << it->get_id() << " processing-time=" << it->get_processing_duration() << " queue-type="
-           << it->get_queue() << std::endl;
+           <<((it->get_queue()->get_queue_type() == PackageQueueType::LIFO) ? "LIFO" : "FIFO") << std::endl;
+}
 
 
     os << std::endl << "; == STOREHOUSES ==" << std::endl << std::endl;
-    for (auto it = factory.storehouse_begin(); it != factory.storehouse_cend(); it++)
+    for (auto it = factory.storehouse_begin(); it != factory.storehouse_cend(); it++) {
         os << "STOREHOUSE id=" << it->get_id() << std::endl;
+    }
 
-
-    os << std::endl << "; == LINKS ==" << std::endl << std::endl;
-
+    os << std::endl << "; == LINKS ==" << std::endl;
     for (auto el = factory.ramp_begin(); el != factory.ramp_cend(); el++) {
+        os<< std::endl;
         for (auto elinmap: el->receiver_preferences_.get_preferences()) {
             os << "LINK src=ramp-" << el->get_id() << " dest="
                << ((elinmap.first->get_receiver_type() == ReceiverType::WORKER) ? "worker-" : "store-")
                << elinmap.first->get_id() << std::endl;
             auto pref = el->receiver_preferences_.get_preferences();
         }
-        os<< std::endl;
+
     }
 
     for (auto el = factory.worker_begin(); el != factory.worker_cend(); el++) {
+        os<< std::endl;
         for (auto elinmap: el->receiver_preferences_.get_preferences()) {
-                os << "LINK src=ramp-" << el->get_id() << " dest="
+                os << "LINK src=worker-" << el->get_id() << " dest="
                    << ((elinmap.first->get_receiver_type() == ReceiverType::WORKER) ? "worker-" : "store-")
                    << elinmap.first->get_id() << std::endl;
                 auto pref = el->receiver_preferences_.get_preferences();
         }
-        os<< std::endl;
     }
-
 
     os.flush();
 
