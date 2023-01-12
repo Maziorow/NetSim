@@ -1,16 +1,45 @@
-cmake_minimum_required(VERSION 3.13)
-project(implementation)
+    cmake_minimum_required(VERSION 3.13)
+    project(NetSim)
 
-set(CMAKE_CXX_STANDARD 17)
-set(GCC_COVERAGE_COMPILE_FLAGS "-std=c++17 -Wall -Wextra -Werror -Wpedantic -pedantic-errors")
+    set(CMAKE_CXX_STANDARD 17)
+    add_compile_options(-Wall -Wextra -Werror -Wpedantic -pedantic-errors)
 
-include_directories(
+    include_directories(
         include
-)
+    )
 
-add_definitions(${GCC_COVERAGE_COMPILE_FLAG})
+    set(SOURCE_FILES
+            src/package.cpp
+            src/storage_types.cpp
+            src/nodes.cpp
+            src/helpers.cpp
+            src/factory.cpp
+    )
 
-set(SOURCE_FILES
-        src/package.cpp
-        src/storage_types.cpp
-        )
+    add_executable(NetSim ${SOURCE_FILES} main.cpp)
+    add_executable(NetSim_debug ${SOURCE_FILES})
+
+    # == Unit testing using Google Testing Framework ==
+
+    set(SOURCES_FILES_TESTS
+            test/test_package.cpp
+            test/test_storage_types.cpp
+            test/test_nodes.cpp
+            test/test_factory_io.cpp
+    )
+
+    add_executable(NetSim_test ${SOURCE_FILES} ${SOURCES_FILES_TESTS} test/main_gtest.cpp)
+
+    target_include_directories(NetSim_test PUBLIC
+    googletest-master/googlemock/include
+    googletest-master/googletest/include
+    mocks
+    )
+
+    add_subdirectory(googletest-master)
+
+    target_link_libraries(NetSim_test gmock)
+
+    target_compile_definitions(NetSim_test PUBLIC EXERCISE_ID=REPORTING)
+
+
