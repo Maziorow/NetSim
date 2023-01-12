@@ -42,6 +42,6 @@
 
     target_link_libraries(NetSim_test gmock)
 
-    target_compile_definitions(NetSim_test PUBLIC EXERCISE_ID=EXERCISE_ID_FACTORY)
+    target_compile_definitions(NetSim_test PUBLIC EXERCISE_ID=REPORTING)
 
 

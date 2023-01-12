@@ -13,6 +13,7 @@ TEST(PackageQueueTest, IsFifoCorrect) {
     q.push(Package(1));
     q.push(Package(2));
 
+
     Package p(std::move(q.pop()));
     EXPECT_EQ(p.get_id(), 1);
 
