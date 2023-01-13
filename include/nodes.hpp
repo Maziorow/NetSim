@@ -27,6 +27,7 @@ public:
 class ReceiverPreferences{
 public:
     using preferences_t = std::map<IPackageReceiver*, double>;
+    using iterator = preferences_t::iterator;
     using const_iterator = preferences_t::const_iterator;
 
     ReceiverPreferences() = default;
@@ -38,10 +39,10 @@ public:
     preferences_t preferences_;
     ProbabilityGenerator rand_function = probability_generator;
 
-    const_iterator cbegin() {return preferences_.cbegin(); }
-    const_iterator cend() {return preferences_.cend(); }
-    const_iterator begin() {return preferences_.begin(); }
-    const_iterator end() {return preferences_.end(); }
+    const_iterator cbegin() const {return preferences_.cbegin(); }
+    const_iterator cend() const {return preferences_.cend(); }
+    iterator begin() {return preferences_.begin(); }
+    iterator end() {return preferences_.end(); }
 };
 
 
@@ -76,6 +77,8 @@ private:
 
 class Worker : public PackageSender, public IPackageReceiver{
 public:
+    using iterator= std::list<Package>::iterator;
+    using const_iterator= std::list<Package>::const_iterator;
     Worker(ElementID id, TimeOffset pd, std::unique_ptr<IPackageQueue> q): id_(id), pd_(pd), q_(std::move(q)) {};
 
     void do_work(Time t);
@@ -87,6 +90,11 @@ public:
     ReceiverType get_receiver_type() const override { return ReceiverType::WORKER; }
     void receive_package(Package&& p) override { q_->push(std::move(p)); }
     IPackageQueue* get_queue() const { return q_.get(); }
+
+    const_iterator cbegin() const {return q_->cbegin(); }
+    const_iterator cend() const {return q_->cend(); }
+    iterator begin() {return q_->begin(); }
+    iterator end() {return q_->end(); }
 
 private:
     ElementID id_;
@@ -101,6 +109,8 @@ private:
 
 class Storehouse : public IPackageReceiver{
 public:
+    using iterator= std::list<Package>::iterator;
+    using const_iterator= std::list<Package>::const_iterator;
     Storehouse(ElementID id): id_(id), d_(std::make_unique<PackageQueue>(PackageQueue(PackageQueueType::FIFO))) {};
     Storehouse(ElementID id, std::unique_ptr<IPackageStockpile> d): id_(id), d_(std::move(d)) {};
 
@@ -108,6 +118,11 @@ public:
     ReceiverType get_receiver_type() const override { return ReceiverType::STOREHOUSE; }
     void receive_package(Package&& p) override { d_->push(std::move(p)); }
     IPackageStockpile* get_stockpile() const { return d_.get(); }
+
+    const_iterator cbegin() const {return d_->cbegin(); }
+    const_iterator cend() const {return d_->cend(); }
+    iterator begin() {return d_->begin(); }
+    iterator end() {return d_->end(); }
 
 private:
     ElementID id_;
