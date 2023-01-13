@@ -79,19 +79,23 @@ public:
     Worker(ElementID id, TimeOffset pd, std::unique_ptr<IPackageQueue> q): id_(id), pd_(pd), q_(std::move(q)) {};
 
     void do_work(Time t);
+    const std::optional<Package>& get_processing_buffer() const { return now_processed; }
     TimeOffset get_processing_duration() const { return pd_; }
+    Time get_processing_time() const {return actual_processing_time_-processing_start_time_; }
     Time get_package_processing_start_time() const { return t_; }
     ElementID get_id() const override {return id_; }
     ReceiverType get_receiver_type() const override { return ReceiverType::WORKER; }
     void receive_package(Package&& p) override { q_->push(std::move(p)); }
     IPackageQueue* get_queue() const { return q_.get(); }
-    const std::optional<Package>& get_processing_buffer() { return buffer; }
 
 private:
     ElementID id_;
     TimeOffset pd_;
     Time t_ = 0;
+    Time processing_start_time_ = 1;
+    Time actual_processing_time_ = 1;
     std::unique_ptr<IPackageQueue> q_;
+    std::optional<Package> now_processed;
 };
 
 
@@ -103,6 +107,7 @@ public:
     ElementID get_id() const override {return id_; }
     ReceiverType get_receiver_type() const override { return ReceiverType::STOREHOUSE; }
     void receive_package(Package&& p) override { d_->push(std::move(p)); }
+    IPackageStockpile* get_stockpile() const { return d_.get(); }
 
 private:
     ElementID id_;

@@ -40,13 +40,13 @@ void perform_report_check(std::function<void(std::ostringstream&)>& reporting_fu
         ASSERT_EQ(output_lines[i], expected_report_lines[i]) << "(in element no.: " << (i + 1) << ")";
     }
 }
-/**
+
 void perform_turn_report_check(const Factory& factory, Time t, std::vector<std::string>& expected_report_lines) {
     std::function<void(std::ostringstream&)> reporting_function = [&factory, t](
             std::ostringstream& oss) { generate_simulation_turn_report(factory, oss, t); };
     perform_report_check(reporting_function, expected_report_lines);
 }
-**/
+
 void perform_structure_report_check(const Factory& factory, std::vector<std::string>& expected_report_lines) {
     std::function<void(std::ostringstream&)> reporting_function = [&factory](
             std::ostringstream& oss) { generate_structure_report(factory, oss); };
@@ -167,7 +167,7 @@ TEST(ReportsTest, StructureReport_R2W2S2) {
 
     perform_structure_report_check(factory, expected_report_lines);
 }
-/**
+
 TEST(ReportsTest, TurnReportNoPackages) {
     // Utwórz fabrykę.
     Factory factory;
@@ -368,4 +368,3 @@ TEST(ReportsTest, TurnReportPackageInStock) {
 
     perform_turn_report_check(factory, t, expected_report_lines);
 }
-**/

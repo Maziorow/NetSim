@@ -94,8 +94,6 @@ void generate_structure_report(const Factory& f, std::ostream& os){
 void generate_simulation_turn_report(const Factory& f, std::ostream& os, Time t){
     os << "=== [ Turn: " << t << " ] ===" << std::endl << std::endl;
     os << "== WORKERS ==" << std::endl;
-    std::cout << "=== [ Turn: " << t << " ] ===" << std::endl << std::endl;
-    std::cout << "== WORKERS ==" << std::endl;
 
     std::vector<ElementID> sorted_workers_ids;
     for(auto it = f.worker_cbegin(); it != f.worker_cend(); ++it) {
@@ -106,13 +104,12 @@ void generate_simulation_turn_report(const Factory& f, std::ostream& os, Time t)
     for(auto el : sorted_workers_ids){
         os << std::endl << "WORKER #" << el << std::endl;
         std::string buffer = "";
-        if(f.find_worker_by_id(el)->buffer.has_value()){
-            buffer = "#" + std::to_string(f.find_worker_by_id(el)->buffer->get_id()) + " (pt = " + std::to_string(f.find_worker_by_id(el)->get_processing_duration()) + ")";
+        if(f.find_worker_by_id(el)->get_processing_buffer()){
+            buffer = "#" + std::to_string(f.find_worker_by_id(el)->get_processing_buffer()->get_id()) + " (pt = " + std::to_string(f.find_worker_by_id(el)->get_processing_time()) + ")";
         }else{
             buffer = "(empty)";
         }
         os << "  PBuffer: " << buffer << std::endl;
-        std::cout << "  PBuffer: " << buffer << std::endl;
         std::string queue = "";
         if(f.find_worker_by_id(el)->get_queue()->size() == 0){
             queue = " (empty)";
@@ -127,11 +124,40 @@ void generate_simulation_turn_report(const Factory& f, std::ostream& os, Time t)
             }
         }
         os << "  Queue:" << queue << std::endl;
-        std::cout << "  Queue:" << queue << std::endl;
 
-        std::set<ElementID> sbuffer_ids;
-        for(auto r = f.ramp_cbegin();r != f.ramp_cend();++r){
-            r->buffer.
+        std::string sbuffer = "";
+        if(f.find_worker_by_id(el)->buffer.has_value()){
+            sbuffer = ("#" + std::to_string(f.find_worker_by_id(el)->buffer->get_id()));
+        }else{
+            sbuffer = "(empty)";
         }
+        os << "  SBuffer: " << sbuffer << std::endl;
     }
+
+    os << std::endl << std::endl << "== STOREHOUSES ==" << std::endl;
+    std::vector<ElementID> sorted_storehouses_ids;
+    for(auto it = f.storehouse_cbegin(); it != f.storehouse_cend(); ++it) {
+        sorted_storehouses_ids.push_back(it->get_id());
+    }
+
+    std::sort(sorted_storehouses_ids.begin(),sorted_storehouses_ids.end());
+    for(auto el : sorted_storehouses_ids){
+        os << std::endl << "STOREHOUSE #" << el << std::endl;
+        std::set<ElementID> stock_ids;
+        std::string stock = "";
+        for(auto& id : *f.find_storehouse_by_id(el)->get_stockpile()){
+            stock_ids.insert(id.get_id());
+        }
+        if(stock_ids.empty()){
+            stock = " (empty)";
+        }else{
+            for(auto id : stock_ids) {
+                stock += (" #" + std::to_string(id));
+                if (id != *stock_ids.rbegin())
+                    stock += ",";
+            }
+        }
+        os << "  Stock:" << stock << std::endl;
+    }
+    os << std::endl;
 }
