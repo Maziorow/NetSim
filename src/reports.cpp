@@ -10,6 +10,7 @@
 #include <ostream>
 #include <iostream>
 #include <sstream>
+#include <set>
 
 
 void generate_structure_report(const Factory& f, std::ostream& os){
@@ -88,4 +89,49 @@ void generate_structure_report(const Factory& f, std::ostream& os){
         os << std::endl << "STOREHOUSE #" << el << std::endl;
     }
     os << std::endl;
+}
+
+void generate_simulation_turn_report(const Factory& f, std::ostream& os, Time t){
+    os << "=== [ Turn: " << t << " ] ===" << std::endl << std::endl;
+    os << "== WORKERS ==" << std::endl;
+    std::cout << "=== [ Turn: " << t << " ] ===" << std::endl << std::endl;
+    std::cout << "== WORKERS ==" << std::endl;
+
+    std::vector<ElementID> sorted_workers_ids;
+    for(auto it = f.worker_cbegin(); it != f.worker_cend(); ++it) {
+        sorted_workers_ids.push_back(it->get_id());
+    }
+    std::sort(sorted_workers_ids.begin(),sorted_workers_ids.end());
+
+    for(auto el : sorted_workers_ids){
+        os << std::endl << "WORKER #" << el << std::endl;
+        std::string buffer = "";
+        if(f.find_worker_by_id(el)->buffer.has_value()){
+            buffer = "#" + std::to_string(f.find_worker_by_id(el)->buffer->get_id()) + " (pt = " + std::to_string(f.find_worker_by_id(el)->get_processing_duration()) + ")";
+        }else{
+            buffer = "(empty)";
+        }
+        os << "  PBuffer: " << buffer << std::endl;
+        std::cout << "  PBuffer: " << buffer << std::endl;
+        std::string queue = "";
+        if(f.find_worker_by_id(el)->get_queue()->size() == 0){
+            queue = " (empty)";
+        }else{
+            std::set<ElementID> queue_ids;
+            for(auto&id : *f.find_worker_by_id(el)->get_queue())
+                queue_ids.insert(id.get_id());
+            for(auto id : queue_ids){
+                queue += (" #" + std::to_string(id));
+                if (id != *queue_ids.rbegin())
+                    queue += ",";
+            }
+        }
+        os << "  Queue:" << queue << std::endl;
+        std::cout << "  Queue:" << queue << std::endl;
+
+        std::set<ElementID> sbuffer_ids;
+        for(auto r = f.ramp_cbegin();r != f.ramp_cend();++r){
+            r->buffer.
+        }
+    }
 }
