@@ -1,13 +1,13 @@
 #include "factory.hpp"
+#include "nodes.hpp"
 #include "storage_types.hpp"
 
-#include <algorithm>
+#include <vector>
 #include <map>
-#include <stdexcept>
+#include <string>
+#include <ostream>
 #include <iostream>
 #include <sstream>
-#include <vector>
-#include <ostream>
 
 
 template <class T>
@@ -22,13 +22,13 @@ typename std::vector<T>::iterator NodeCollection<T>::find_by_id(ElementID id) {
     return found;
 }
 
-
+/*
 template <class T>
 typename std::vector<T>::const_iterator NodeCollection<T>::find_by_id(ElementID id) const {
     const_iterator found = std::find_if(node_.begin(),node_.end(), [&] (T const& p) {return p.get_id() ==id;});
     return found;
 }
-
+*/
 
 bool has_reachable_storehouse(const PackageSender* sender, std::map<const PackageSender*, NodeColor>& node_colors){
     if (node_colors[sender] == NodeColor::VERIFIED)
@@ -293,11 +293,3 @@ void save_factory_structure(Factory& factory, std::ostream& os) {
     os.flush();
 
 }
-/**
-void generate_structure_report(const Factory& f, std::ostream& os){
-    os << std::endl << "== LOADING RAMPS ==";
-    std::vector<Ramp> sorted_ramps;
-    //std::copy(f.ramp_cbegin(),f.ramp_cend(),std::back_inserter(sorted_ramps));
-    //std::sort(sorted_ramps.begin(),sorted_ramps.end(), [](Ramp lhs, Ramp rhs) {return lhs.get_id() > rhs.get_id(); });
-}
- **/

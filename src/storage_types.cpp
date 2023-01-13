@@ -2,6 +2,8 @@
 
 Package PackageQueue::pop(){
     Package elem;
+    Package::freed_IDs.insert(elem.get_id());
+    Package::assigned_IDs.erase(elem.get_id());
     switch(queue_type_){
         case PackageQueueType::LIFO:
             elem = std::move(*queue_.end());

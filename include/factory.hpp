@@ -2,11 +2,11 @@
 #define NETSIM_FACTORY_HPP
 
 #include "nodes.hpp"
+#include "storage_types.hpp"
 
 #include <vector>
 #include <map>
 #include <string>
-#include <istream>
 #include <ostream>
 #include <iostream>
 #include <sstream>
@@ -23,13 +23,19 @@ public:
     void add(T&& node){ node_.push_back(std::move(node)); }
     void remove_by_id(ElementID id);
     iterator find_by_id(ElementID id);
-    const_iterator find_by_id(ElementID id) const;
+    //const_iterator find_by_id(ElementID id) const;
     iterator begin() {return node_.begin();}
     iterator end() {return node_.end();}
     const_iterator cbegin() const {return node_.cbegin();}
     const_iterator cend() const {return node_.cend();}
 
     std::vector<T> node_;
+
+
+    typename NodeCollection<T>::const_iterator find_by_id(ElementID id) const {
+        const_iterator found = std::find_if(node_.begin(),node_.end(), [&] (T const& p) {return p.get_id() ==id;});
+        return found;
+    }
 };
 
 
@@ -89,13 +95,8 @@ struct ParsedLineData{
 
 
 ParsedLineData parse_line(std::string line);
+
 Factory load_factory_structure(std::istream& is);
 void save_factory_structure(Factory& factory, std::ostream& os);
-
-//void generate_structure_report(const Factory& f, std::ostream& os);
-
-
-
-
 
 #endif //NETSIM_FACTORY_HPP
