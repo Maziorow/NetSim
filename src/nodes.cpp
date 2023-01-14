@@ -21,7 +21,7 @@ void ReceiverPreferences::remove_receiver(IPackageReceiver* r) {
         }
         if(!preferences_.empty()){
             int size = preferences_.size();
-            double newProbability = 1/size;
+            double newProbability = 1.0/size;
             for(auto&el : preferences_){
                 el.second = newProbability;
             }

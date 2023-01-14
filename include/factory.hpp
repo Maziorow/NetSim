@@ -95,26 +95,28 @@ void save_factory_structure(Factory& factory, std::ostream& os);
 
 template<class T>
 void Factory::remove_receiver(NodeCollection<T>& collection, ElementID id) {
-    if constexpr (!std::is_same_v<T, Ramp>) {
-        auto type = collection.find_by_id(id)->get_receiver_type();
-        for (auto& el: ramps_) {
-            auto pref = el.receiver_preferences_.get_preferences();
-            for (auto& pref_r: pref) {
-                if (pref_r.first->get_receiver_type() == type && pref_r.first->get_id() == id) {
-                    el.receiver_preferences_.remove_receiver(pref_r.first);
+    if(collection.find_by_id(id)!=collection.cend()) {
+        if constexpr (!std::is_same_v<T, Ramp>) {
+            auto type = collection.find_by_id(id)->get_receiver_type();
+            for (auto& el: ramps_) {
+                auto pref = el.receiver_preferences_.get_preferences();
+                for (auto& pref_r: pref) {
+                    if ((pref_r.first->get_receiver_type() == type) && (pref_r.first->get_id() == id)) {
+                        el.receiver_preferences_.remove_receiver(pref_r.first);
+                    }
+                }
+            }
+            for (auto& el: workers_) {
+                auto pref = el.receiver_preferences_.get_preferences();
+                for (auto& pref_w: pref) {
+                    if ((pref_w.first->get_receiver_type() == type) && (pref_w.first->get_id() == id)) {
+                        el.receiver_preferences_.remove_receiver(pref_w.first);
+                    }
                 }
             }
         }
-        for (auto& el: workers_) {
-            auto pref = el.receiver_preferences_.get_preferences();
-            for (auto& pref_w: pref) {
-                if (pref_w.first->get_receiver_type() == type && pref_w.first->get_id() == id) {
-                    el.receiver_preferences_.remove_receiver(pref_w.first);
-                }
-            }
-        }
+        collection.remove_by_id(id);
     }
-    collection.remove_by_id(id);
 }
 
 template <class T>
