@@ -23,19 +23,13 @@ public:
     void add(T&& node){ node_.push_back(std::move(node)); }
     void remove_by_id(ElementID id);
     iterator find_by_id(ElementID id);
-    //const_iterator find_by_id(ElementID id) const;
+    const_iterator find_by_id(ElementID id) const;
     iterator begin() {return node_.begin();}
     iterator end() {return node_.end();}
     const_iterator cbegin() const {return node_.cbegin();}
     const_iterator cend() const {return node_.cend();}
 
     std::vector<T> node_;
-
-
-    typename NodeCollection<T>::const_iterator find_by_id(ElementID id) const {
-        const_iterator found = std::find_if(node_.begin(),node_.end(), [&] (T const& p) {return p.get_id() ==id;});
-        return found;
-    }
 };
 
 
@@ -98,5 +92,47 @@ ParsedLineData parse_line(std::string line);
 
 Factory load_factory_structure(std::istream& is);
 void save_factory_structure(Factory& factory, std::ostream& os);
+
+template<class T>
+void Factory::remove_receiver(NodeCollection<T>& collection, ElementID id) {
+    if constexpr (!std::is_same_v<T, Ramp>) {
+        auto type = collection.find_by_id(id)->get_receiver_type();
+        for (auto& el: ramps_) {
+            auto pref = el.receiver_preferences_.get_preferences();
+            for (auto& pref_r: pref) {
+                if (pref_r.first->get_receiver_type() == type && pref_r.first->get_id() == id) {
+                    el.receiver_preferences_.remove_receiver(pref_r.first);
+                }
+            }
+        }
+        for (auto& el: workers_) {
+            auto pref = el.receiver_preferences_.get_preferences();
+            for (auto& pref_w: pref) {
+                if (pref_w.first->get_receiver_type() == type && pref_w.first->get_id() == id) {
+                    el.receiver_preferences_.remove_receiver(pref_w.first);
+                }
+            }
+        }
+    }
+    collection.remove_by_id(id);
+}
+
+template <class T>
+void NodeCollection<T>::remove_by_id(ElementID id){
+    iterator to_be_removed = std::find_if(node_.begin(),node_.end(), [&] (T & p) {return p.get_id() ==id;});
+    node_.erase(to_be_removed);
+}
+
+template <class T>
+typename std::vector<T>::iterator NodeCollection<T>::find_by_id(ElementID id) {
+    iterator found = std::find_if(node_.begin(),node_.end(), [&] (T & p) {return p.get_id() ==id;});
+    return found;
+}
+
+template <class T>
+typename std::vector<T>::const_iterator NodeCollection<T>::find_by_id(ElementID id) const {
+    const_iterator found = std::find_if(node_.begin(),node_.end(), [&] (T const& p) {return p.get_id() ==id;});
+    return found;
+}
 
 #endif //NETSIM_FACTORY_HPP
