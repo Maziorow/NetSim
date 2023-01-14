@@ -1,7 +1,6 @@
 #include "package.hpp"
 #include "types.hpp"
 #include <set>
-#include <algorithm>
 #include <iostream>
 
 std::set<ElementID> Package::assigned_IDs;

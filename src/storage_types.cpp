@@ -14,8 +14,7 @@ Package PackageQueue::pop(){
             queue_.pop_front();
             break;
         default:
-
-            break;//TODO
+            break;
     }
     return elem;
 }

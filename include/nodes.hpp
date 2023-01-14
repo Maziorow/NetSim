@@ -2,8 +2,9 @@
 #define NETSIM_NODES_HPP
 
 #include <map>
-#include <memory>
+#include <cmath>
 #include <optional>
+#include <memory>
 
 #include "types.hpp"
 #include "storage_types.hpp"

@@ -1,7 +1,10 @@
 #include "nodes.hpp"
+#include "types.hpp"
+#include "storage_types.hpp"
+
+#include <map>
 #include <cmath>
-#include <iterator>
-#include <memory>
+#include <optional>
 
 
 void ReceiverPreferences::add_receiver(IPackageReceiver* r){

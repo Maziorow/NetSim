@@ -19,7 +19,6 @@
     )
 
     add_executable(NetSim ${SOURCE_FILES} main.cpp)
-    add_executable(NetSim_debug ${SOURCE_FILES})
 
     # == Unit testing using Google Testing Framework ==
 
@@ -34,6 +33,7 @@
     )
 
     add_executable(NetSim_test ${SOURCE_FILES} ${SOURCES_FILES_TESTS} test/main_gtest.cpp)
+    add_executable(NetSim_debug ${SOURCE_FILES} ${SOURCES_FILES_TESTS} test/main_gtest.cpp)
 
     target_include_directories(NetSim_test PUBLIC
     googletest-master/googlemock/include

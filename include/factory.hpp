@@ -122,7 +122,7 @@ void Factory::remove_receiver(NodeCollection<T>& collection, ElementID id) {
 template <class T>
 void NodeCollection<T>::remove_by_id(ElementID id){
     iterator to_be_removed = std::find_if(node_.begin(),node_.end(), [&] (T & p) {return p.get_id() ==id;});
-    node_.erase(to_be_removed);
+    node_.erase(to_be_removed,to_be_removed);
 }
 
 template <class T>

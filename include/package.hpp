@@ -2,6 +2,7 @@
 #define IMPLEMENTATION_PACKAGE_HPP
 
 #include "types.hpp"
+
 #include <set>
 
 class Package{
